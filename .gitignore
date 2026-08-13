@@ -2,3 +2,6 @@
 __pycache__/
 *.pyc
 .ipynb_checkpoints/
+
+# 임베딩 캐시 (재생성 가능)
+.emb_cache/
