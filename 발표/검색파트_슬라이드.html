@@ -1,0 +1,500 @@
+<meta charset="utf-8">
+<title>검색 파트 슬라이드</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:#5a5a5a;font-family:"Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",sans-serif;padding:30px 0}
+  .slide{width:1280px;height:720px;background:#fff;margin:0 auto 30px;padding:48px 60px 36px;
+         display:flex;flex-direction:column;position:relative}
+  .head{display:flex;align-items:baseline;gap:22px}
+  .num{font-size:38px;font-weight:700;color:#c9cbcd;letter-spacing:-1px}
+  .ttl{font-size:38px;font-weight:400;color:#54585c;letter-spacing:-1px}
+  .rule{height:1px;background:#9fa3a7;margin-top:16px}
+  .body{flex:1;display:flex;flex-direction:column;justify-content:center;padding:12px 0}
+  .foot{height:1px;background:#9fa3a7;margin-bottom:10px}
+  .fnote{font-size:16px;color:#bcbfc2;font-weight:300}
+
+  /* 공통 */
+  .capline{display:flex;align-items:center;gap:16px;margin-bottom:16px}
+  .capline i{flex:1;height:1px;background:#d6d9dc}
+  .capline s{text-decoration:none;font-size:18px;color:#8b8f93}
+  .note{text-align:center;font-size:20px;color:#5f6469;margin-top:20px;font-weight:600;letter-spacing:-0.5px}
+  .note em{font-style:normal;color:#c0392b}
+  .blue{background:#cfe6f7}.green{background:#d6ead0}.pink{background:#fadad4}.yellow{background:#fceec5}
+  .purple{background:#e3d9f2}.gray{background:#e9ebec}
+
+  /* 4분할 */
+  .grid4{display:grid;grid-template-columns:1fr 1fr;gap:24px 36px}
+  .card{border-radius:16px;padding:30px 34px;min-height:158px;display:flex;flex-direction:column;justify-content:center}
+  .card b{font-size:32px;font-weight:700;color:#2f3336;line-height:1.32;letter-spacing:-1px}
+  .card span{font-size:18px;color:#7c8085;margin-top:11px;line-height:1.45}
+  .ar{text-align:right}
+
+  /* 가로 플로우 */
+  .flow{display:flex;align-items:stretch;justify-content:center;gap:10px}
+  .step{border-radius:14px;padding:24px 14px;text-align:center;width:186px;flex:none;
+        display:flex;flex-direction:column;justify-content:center}
+  .step b{display:block;font-size:22px;font-weight:700;color:#2f3336;letter-spacing:-1px;line-height:1.3}
+  .step span{display:block;font-size:15px;color:#7c8085;margin-top:8px;line-height:1.45}
+  .arw{font-size:26px;color:#b9c6d1;align-self:center;flex:none}
+
+  /* 기존 → 최종 듀오 패널 */
+  .duo{display:flex;align-items:stretch;justify-content:center;gap:26px}
+  .col{flex:1;display:flex;flex-direction:column;max-width:470px}
+  .ptitle{text-align:center;font-size:26px;font-weight:800;margin-bottom:14px;letter-spacing:-1px}
+  .ptitle.a{color:#8b9096}.ptitle.b{color:#1f6fd0}
+  .panel{flex:1;background:#fafbfc;border-radius:18px;padding:26px 24px;box-shadow:0 3px 12px rgba(0,0,0,.08);
+         display:flex;flex-direction:column;justify-content:center}
+  .panel.hi{background:#f7fbff;border:2px solid #1f6fd0}
+  .vf{text-align:center}
+  .vf .n{font-size:23px;font-weight:700;color:#2f3336;letter-spacing:-1px;line-height:1.35}
+  .vf .n.sm{font-size:20px;font-weight:600}
+  .vf .d{font-size:22px;color:#3d8fe0;margin:7px 0;font-weight:400}
+  .vf .lb{font-size:16px;color:#3d8fe0;font-weight:600;margin:3px 0}
+  .sep{height:1px;background:#dfe3e6;margin:18px 4px}
+  .plabel{font-size:20px;font-weight:800;color:#1f6fd0;margin-bottom:10px;text-align:left}
+  .plist{list-style:none;text-align:left}
+  .plist li{font-size:20px;color:#3f4448;padding:6px 0 6px 18px;position:relative;font-weight:600;line-height:1.4}
+  .plist li:before{content:"•";position:absolute;left:2px;color:#9aa0a6}
+  .hilite{border:2px solid #4a90d9;border-radius:12px;padding:14px 12px;margin-top:14px;text-align:center}
+  .hilite .t{font-size:18px;color:#1f6fd0;font-weight:700;margin-bottom:6px}
+  .hilite .c{font-size:21px;color:#2b6cb0;font-weight:800;line-height:1.5}
+  .hilite .c small{font-size:16px;color:#7c8085;font-weight:600}
+  .bigarrow{align-self:center;font-size:44px;color:#a9c8e8;flex:none;padding-top:34px}
+
+  /* 표 */
+  .tbl{width:100%;border-collapse:collapse}
+  .tbl th{font-size:18px;color:#8b8f93;font-weight:600;padding:0 10px 13px;border-bottom:2px solid #cdd1d4}
+  .tbl th.lab{text-align:left}
+  .tbl td{padding:16px 10px;text-align:center;font-size:25px;font-weight:700;color:#3f4448;
+          border-bottom:1px solid #e9ebec;letter-spacing:-1px}
+  .tbl td.lab{text-align:left;font-size:21px;color:#2f3336;letter-spacing:-0.5px}
+  .tbl td.lab i{display:block;font-style:normal;font-size:15px;color:#9aa0a6;font-weight:600;margin-top:4px}
+  .tbl td.mut{color:#b4b8bb;font-weight:600}
+  .tbl tr.hi td{background:#fadad4;color:#b8442f;font-weight:800}
+  .tbl tr.hi td:first-child{border-radius:10px 0 0 10px}
+  .tbl tr.hi td:last-child{border-radius:0 10px 10px 0}
+  .tbl tr.ok td{background:#dff0d8;color:#3f7a3f;font-weight:800}
+  .tbl tr.ok td:first-child{border-radius:10px 0 0 10px}
+  .tbl tr.ok td:last-child{border-radius:0 10px 10px 0}
+  .tag{display:inline-block;font-size:14px;font-weight:700;color:#fff;background:#e08a7a;
+       border-radius:20px;padding:3px 11px;margin-left:8px;vertical-align:middle;letter-spacing:0}
+  .tag.g{background:#7aa87a}
+
+  /* 예시 데이터 박스 */
+  .qbox{background:#eef4fa;border-left:6px solid #6aa9e0;border-radius:8px;padding:16px 22px;margin-bottom:18px}
+  .qbox .ql{font-size:14px;color:#6f8ba6;font-weight:700;letter-spacing:1px;margin-bottom:5px}
+  .qbox .qt{font-size:21px;color:#28425c;font-weight:700;letter-spacing:-0.5px}
+  .qbox .qa{font-size:16px;color:#5c7a93;margin-top:6px}
+  .gold{font-size:16px;color:#617c93;font-weight:600;margin-top:6px}
+
+  /* 플로우차트 */
+  .fc{position:relative;height:430px}
+  .nd{position:absolute;display:flex;flex-direction:column;align-items:center;justify-content:center;
+      text-align:center;font-weight:700;color:#2f3336;letter-spacing:-0.5px;line-height:1.35}
+  .nd.rect{border-radius:12px;font-size:21px}
+  .nd.pill{border-radius:60px;font-size:21px;border:2px solid #7ba7d8}
+  .dia{position:absolute;transform:rotate(45deg);border-radius:8px}
+  .dia .in{transform:rotate(-45deg);width:100%;height:100%;display:flex;align-items:center;
+           justify-content:center;text-align:center;font-size:20px;font-weight:700;color:#2f3336;line-height:1.35}
+  .ln{position:absolute;background:#a9aeb2}
+  .lbl{position:absolute;font-size:19px;font-weight:800}
+  .lbl.y{color:#1f6fd0}.lbl.n{color:#d0402c}
+  .lbl.gr{color:#6f7478;font-weight:600;font-size:17px}
+  .tri{position:absolute;width:0;height:0}
+</style>
+
+<!-- 1 -->
+<div class="slide">
+  <div class="head"><span class="num">01</span><span class="ttl">약관 데이터 분석</span></div>
+  <div class="rule"></div>
+  <div class="body">
+    <div class="grid4">
+      <div class="card blue"><b>조항 72개가<br>전부</b><span>계정 17 · 위치정보 16 · 통합서비스 18 · 통합 21</span></div>
+      <div class="card green ar"><b>길이 편차<br>40배</b><span>최단 85자 ~ 최장 3482자<br>길이 편향 대책이 필수</span></div>
+      <div class="card pink"><b>4개 문서에<br>같은 조항</b><span>"약관 외 준칙" 4개 전부 · 유사도 0.80<br>제목 중복 36 / 72</span></div>
+      <div class="card yellow ar"><b>숫자·조번호가<br>정답을 가름</b><span>"2시간" "8세 이하" "6개월"<br>의미보다 어휘 일치가 유리</span></div>
+    </div>
+  </div>
+  <div class="foot"></div><div class="fnote">AI Performance Improvement Competition</div>
+</div>
+
+<!-- 2 -->
+<div class="slide">
+  <div class="head"><span class="num">01</span><span class="ttl">청킹 — 두 단위를 분리</span></div>
+  <div class="rule"></div>
+  <div class="body">
+    <div class="duo">
+      <div class="col">
+        <div class="ptitle a">조(條) 단위 · 72개</div>
+        <div class="panel">
+          <div class="vf">
+            <div class="n">카카오계정 약관 제16조<br><span style="font-size:19px;color:#7c8085">손해배상 · 767자</span></div>
+            <div class="sep"></div>
+            <div class="plabel">쓰는 곳</div>
+            <ul class="plist">
+              <li>채점 단위와 일치 <span style="color:#9aa0a6">[문서명, 조번호]</span></li>
+              <li>최종 반환 · 인용 단위</li>
+              <li>생성 모델에 넘기는 원문</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="bigarrow">→</div>
+      <div class="col">
+        <div class="ptitle b">항(項) 단위 서브청크</div>
+        <div class="panel hi">
+          <div class="vf">
+            <div class="n sm">① 회사는 고의·중과실로 …</div>
+            <div class="n sm">② 이용자가 약관을 위반하여 …</div>
+            <div class="n sm">③ 회사는 무료 서비스에 대하여 …</div>
+            <div class="sep"></div>
+            <div class="plabel">쓰는 곳</div>
+            <ul class="plist">
+              <li>BM25·리랭커 <b>스코어링 전용</b></li>
+              <li>반환하지 않음</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="note">검색 단위와 채점 단위가 어긋나면 <em>내용을 맞혀도 점수가 안 나온다</em></div>
+  </div>
+  <div class="foot"></div><div class="fnote">AI Performance Improvement Competition</div>
+</div>
+
+<!-- 3 -->
+<div class="slide">
+  <div class="head"><span class="num">01</span><span class="ttl">자체 평가셋 구축</span></div>
+  <div class="rule"></div>
+  <div class="body">
+    <div class="capline"><i></i><s>공개 10문항만으로는 과적합이 보이지 않는다</s><i></i></div>
+    <div class="flow">
+      <div class="step gray"><b>공개 10</b><span>기준선</span></div>
+      <div class="arw">→</div>
+      <div class="step blue"><b>패러프레이즈</b><span>+4 · 조사·어휘 변형</span></div>
+      <div class="arw">→</div>
+      <div class="step yellow"><b>자체 함정</b><span>+10 · T01~T10</span></div>
+      <div class="arw">→</div>
+      <div class="step pink"><b>72개 조항 전수</b><span>문서명 힌트 없음</span></div>
+    </div>
+    <div class="qbox" style="margin-top:26px">
+      <div class="ql">함정 문항 예시 · T01</div>
+      <div class="qt">"회사의 과실로 손해가 발생하면 회사가 <b>예외 없이 항상</b> 배상해주나요?"</div>
+      <div class="gold">정답 · 카카오계정 약관 제16조 &nbsp;|&nbsp; 함정 · 손해배상 조항이 <b>3개 문서에 거의 동일하게 중복</b>(767 / 769 / 1004자)</div>
+    </div>
+  </div>
+  <div class="foot"></div><div class="fnote">AI Performance Improvement Competition</div>
+</div>
+
+<!-- 4 -->
+<div class="slide">
+  <div class="head"><span class="num">01</span><span class="ttl">토크나이저 — 어절 → 문자 bigram</span></div>
+  <div class="rule"></div>
+  <div class="body">
+    <div class="duo">
+      <div class="col">
+        <div class="ptitle a">기존 · 어절 토큰</div>
+        <div class="panel">
+          <div class="vf">
+            <div class="n">질문 "제10조<span style="color:#c0392b">는</span>" → <code style="font-size:20px">['제10조는']</code></div>
+            <div class="d">↓</div>
+            <div class="n">원문 "제10조" → <code style="font-size:20px">['제10조']</code></div>
+            <div class="sep"></div>
+            <div class="plabel" style="color:#8b9096">문제</div>
+            <ul class="plist">
+              <li>조사 하나에 <b>완전히 다른 토큰</b></li>
+              <li>겹침 0 → 점수 0</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="bigarrow">→</div>
+      <div class="col">
+        <div class="ptitle b">최종 · 문자 2-gram</div>
+        <div class="panel hi">
+          <div class="vf">
+            <div class="n">"제10조는" → <code style="font-size:19px">제1 · 10 · 0조 · 조는</code></div>
+            <div class="d">↓</div>
+            <div class="n">"제10조" → <code style="font-size:19px">제1 · 10 · 0조</code></div>
+            <div class="hilite">
+              <div class="t">3 / 4 토큰이 그대로 겹친다</div>
+              <div class="c">형태소 분석기 없이 조사 변형 흡수<br><small>추가 의존성 0 · 설치 실패 위험 없음</small></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="note">실측 · T10 <em>"카카오 통합서비스약관에 따르면…"</em> → 어절 <b>6위</b> / bigram <b>1위</b></div>
+  </div>
+  <div class="foot"></div><div class="fnote">AI Performance Improvement Competition</div>
+</div>
+
+<!-- 5 -->
+<div class="slide">
+  <div class="head"><span class="num">01</span><span class="ttl">BM25 — 단일 채널 → 2채널 RRF</span></div>
+  <div class="rule"></div>
+  <div class="body">
+    <div class="duo">
+      <div class="col">
+        <div class="ptitle a">기존 방식</div>
+        <div class="panel">
+          <div class="vf">
+            <div class="n">조 전체를 하나로 스코어링</div>
+            <div class="d">↓</div>
+            <div class="n sm">긴 조항일수록 흔한 단어가<br>우연히 많이 포함됨</div>
+            <div class="sep"></div>
+            <div class="plabel" style="color:#8b9096">문제</div>
+            <ul class="plist">
+              <li>긴 조항이 짧은 조항을 압도</li>
+              <li>항 단위로 바꾸면 <b>반대 편향</b></li>
+              <li>짧고 밀도 높은 항이 오탐</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="bigarrow">→</div>
+      <div class="col">
+        <div class="ptitle b">최종</div>
+        <div class="panel hi">
+          <div class="vf">
+            <div class="n">채널 A · 조 전체 BM25</div>
+            <div class="lb">순위 산출</div>
+            <div class="n">채널 B · 항 최고점 BM25</div>
+            <div class="lb">순위 산출</div>
+            <div class="hilite">
+              <div class="t">두 순위를 RRF로 결합</div>
+              <div class="c">1 / (10 + 조전체순위)<br>+ 1 / (10 + 항최고순위)<br><small>점수가 아닌 순위만 써서 스케일 문제 없음</small></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="note">두 채널의 <em>실패 유형이 정반대</em>라서 섞으면 서로 메운다</div>
+  </div>
+  <div class="foot"></div><div class="fnote">AI Performance Improvement Competition</div>
+</div>
+
+<!-- 6 -->
+<div class="slide">
+  <div class="head"><span class="num">01</span><span class="ttl">RRF가 순위를 뒤집는 장면</span></div>
+  <div class="rule"></div>
+  <div class="body">
+    <div class="qbox">
+      <div class="ql">T01 · 조 전체 단독이면 틀리는 문항</div>
+      <div class="qt">"회사의 과실로 손해가 발생하면 회사가 예외 없이 항상 배상해주나요?"</div>
+      <div class="gold">정답 · <b>카카오계정 약관 제16조</b> (손해배상)</div>
+    </div>
+    <table class="tbl">
+      <tr><th class="lab">후보 조항</th><th>조 전체</th><th>항 최고점</th><th>RRF 점수</th><th>최종</th></tr>
+      <tr class="ok"><td class="lab">카카오계정 약관 제16조<i>손해배상 · 767자 — 정답</i></td><td>2위</td><td>1위</td><td>0.17424</td><td>1위</td></tr>
+      <tr><td class="lab">카카오 통합 약관 제18조<i>손해배상 등 · 769자</i></td><td class="mut">1위</td><td>3위</td><td>0.16783</td><td>2위</td></tr>
+      <tr><td class="lab">카카오 통합서비스약관 제15조<i>손해배상 등 · 1004자</i></td><td>3위</td><td>2위</td><td>0.16026</td><td>3위</td></tr>
+    </table>
+    <div class="note">반대 사례 P09 — 항 최고점이 <em>"계정 생성" 조항</em>을 1위로 오탐, 조 전체가 되살림</div>
+  </div>
+  <div class="foot"></div><div class="fnote">AI Performance Improvement Competition</div>
+</div>
+
+<!-- 7 -->
+<div class="slide">
+  <div class="head"><span class="num">01</span><span class="ttl">검색 파이프라인</span></div>
+  <div class="rule"></div>
+  <div class="body">
+    <div class="flow">
+      <div class="step blue"><b>BM25</b><span>문자 bigram<br>문서명+제목+원문</span></div>
+      <div class="arw">→</div>
+      <div class="step green"><b>RRF 결합</b><span>조 전체<br>+ 항 최고점</span></div>
+      <div class="arw">→</div>
+      <div class="step gray"><b>상위 30개</b><span>후보 pool</span></div>
+      <div class="arw">→</div>
+      <div class="step yellow"><b>리랭커</b><span>bge-reranker-v2-m3<br>2채널 재채점</span></div>
+      <div class="arw">→</div>
+      <div class="step pink"><b>근거 1~4개</b><span>점수차 컷오프</span></div>
+    </div>
+    <div class="duo" style="margin-top:30px">
+      <div class="col" style="max-width:none">
+        <div class="panel" style="padding:20px 26px">
+          <div class="vf">
+            <div class="plabel">문서명 하드 필터</div>
+            <div class="n sm" style="text-align:left;font-weight:600">질문에 공식 문서명이 있으면 <b>그 문서 안에서만</b> 후보 선정<br>
+            <span style="color:#7c8085;font-size:18px">"카카오 통합서비스약관에 따르면…" → 통합서비스약관 18개 조항만</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="col" style="max-width:none">
+        <div class="panel" style="padding:20px 26px">
+          <div class="vf">
+            <div class="plabel">리랭커 로딩 실패 시</div>
+            <div class="n sm" style="text-align:left;font-weight:600">BM25 RRF 단독 경로로 <b>자동 폴백</b><br>
+            <span style="color:#7c8085;font-size:18px">새 Colab에서 셀 하나 죽으면 0점 — 임베딩을 안 쓴 이유이기도</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="foot"></div><div class="fnote">AI Performance Improvement Competition</div>
+</div>
+
+<!-- 8 -->
+<div class="slide">
+  <div class="head"><span class="num">01</span><span class="ttl">리랭커 — 같은 원리를 한 번 더</span></div>
+  <div class="rule"></div>
+  <div class="body">
+    <div class="duo">
+      <div class="col">
+        <div class="ptitle a">단일 채널</div>
+        <div class="panel">
+          <div class="vf">
+            <div class="n">조 전체만 재채점</div>
+            <div class="d">↓</div>
+            <div class="n" style="color:#8b9096">MRR 0.9750 · T01 실패</div>
+            <div class="sep"></div>
+            <div class="n">서브청크만 재채점</div>
+            <div class="d">↓</div>
+            <div class="n" style="color:#8b9096">MRR 0.9750 · T03 실패</div>
+            <div class="hilite" style="border-color:#c9ced2">
+              <div class="c" style="color:#6f7478;font-size:19px">점수는 동점인데<br>실패 문항이 정반대</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="bigarrow">→</div>
+      <div class="col">
+        <div class="ptitle b">2채널 RRF</div>
+        <div class="panel hi">
+          <div class="vf">
+            <div class="n">BM25가 뽑은 <b>같은 후보 30개</b></div>
+            <div class="d">↓</div>
+            <div class="n sm">채널 1 · 조 전체 원문으로 재채점</div>
+            <div class="n sm">채널 2 · 질문에 가장 가까운 항으로 재채점</div>
+            <div class="d">↓</div>
+            <div class="n">두 순위를 RRF 결합</div>
+            <div class="hilite">
+              <div class="t">MRR 1.0000</div>
+              <div class="c">20문항 전부 1위<br><small>fetch 1회 · 리랭커 추론만 2회</small></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="foot"></div><div class="fnote">AI Performance Improvement Competition</div>
+</div>
+
+<!-- 9 -->
+<div class="slide">
+  <div class="head"><span class="num">01</span><span class="ttl">리랭커 입력 잘림</span></div>
+  <div class="rule"></div>
+  <div class="body">
+    <div class="qbox" style="border-left-color:#e08a7a;background:#fdf1ee">
+      <div class="ql" style="color:#b8442f">발견한 버그</div>
+      <div class="qt">리랭커 입력을 1000자 + 512토큰으로 두 번 자르고 있었다</div>
+      <div class="gold">통합서비스약관 제12조(금지행위 3482자) — <b>12번~23번 항목 2482자가 통째로 소실</b></div>
+    </div>
+    <div class="flow" style="margin-top:6px">
+      <div class="step gray" style="width:250px"><b>잘린 조 전체</b><span>리랭커 관련도<br><span style="font-size:26px;font-weight:800;color:#8b9096">0.03</span></span></div>
+      <div class="arw">vs</div>
+      <div class="step pink" style="width:250px"><b>실제 관련 항목만</b><span>리랭커 관련도<br><span style="font-size:26px;font-weight:800;color:#b8442f">0.85</span></span></div>
+    </div>
+    <table class="tbl" style="margin-top:24px">
+      <tr><th class="lab">수정안</th><th>공개 10</th><th>함정 10</th><th>종합 20</th><th>속도</th></tr>
+      <tr><td class="lab">현행 (1000자 + 512토큰)</td><td>1.0000</td><td class="mut">0.9000</td><td class="mut">0.9500</td><td class="mut">9.91s</td></tr>
+      <tr><td class="lab">서브청크로 우회<i>순위 변화 0 — 복잡도만 증가</i></td><td>1.0000</td><td class="mut">0.9000</td><td class="mut">0.9500</td><td>—</td></tr>
+      <tr class="hi"><td class="lab">제한 해제 (2048토큰)<span class="tag">채택</span></td><td>1.0000</td><td>0.9500</td><td>0.9750</td><td>7.47s</td></tr>
+    </table>
+  </div>
+  <div class="foot"></div><div class="fnote">AI Performance Improvement Competition</div>
+</div>
+
+<!-- 10 -->
+<div class="slide">
+  <div class="head"><span class="num">01</span><span class="ttl">근거 개수 동적 결정</span></div>
+  <div class="rule"></div>
+  <div class="body">
+    <div class="fc">
+      <!-- 되돌아가는 루프 (위로 우회) -->
+      <div class="ln" style="left:773px;top:40px;width:5px;height:90px"></div>
+      <div class="ln" style="left:105px;top:40px;width:673px;height:5px"></div>
+      <div class="ln" style="left:103px;top:44px;width:5px;height:72px"></div>
+      <div class="tri" style="left:95px;top:116px;border-top:14px solid #a9aeb2;border-left:10px solid transparent;border-right:10px solid transparent"></div>
+      <div class="lbl gr" style="left:380px;top:12px">근거가 4개가 될 때까지 반복</div>
+
+      <!-- 시작 -->
+      <div class="nd pill blue" style="left:0;top:130px;width:210px;height:92px">리랭커 1위 조항<br>무조건 포함</div>
+      <div class="ln" style="left:214px;top:174px;width:86px;height:5px"></div>
+      <div class="tri" style="left:300px;top:166px;border-left:14px solid #a9aeb2;border-top:10px solid transparent;border-bottom:10px solid transparent"></div>
+
+      <!-- 판정 -->
+      <div class="dia yellow" style="left:347px;top:111px;width:130px;height:130px">
+        <div class="in">다음 후보가<br>1위와<br>0.01 이내?</div>
+      </div>
+
+      <!-- YES -->
+      <div class="lbl y" style="left:556px;top:138px">YES</div>
+      <div class="ln" style="left:510px;top:174px;width:130px;height:5px"></div>
+      <div class="tri" style="left:640px;top:166px;border-left:14px solid #a9aeb2;border-top:10px solid transparent;border-bottom:10px solid transparent"></div>
+      <div class="nd rect green" style="left:660px;top:136px;width:230px;height:80px">근거에 추가</div>
+
+      <!-- NO -->
+      <div class="lbl n" style="left:426px;top:292px">NO</div>
+      <div class="ln" style="left:409px;top:270px;width:5px;height:76px"></div>
+      <div class="tri" style="left:401px;top:346px;border-top:14px solid #a9aeb2;border-left:10px solid transparent;border-right:10px solid transparent"></div>
+      <div class="nd rect purple" style="left:296px;top:364px;width:230px;height:74px">거기서 중단</div>
+
+      <!-- 최종 -->
+      <div class="ln" style="left:890px;top:174px;width:36px;height:5px"></div>
+      <div class="nd rect pink" style="left:930px;top:126px;width:230px;height:100px;font-size:21px">최종 근거 1~4개
+        <span style="font-size:16px;color:#8b6b62;font-weight:600;margin-top:8px">MRR 채점 + 생성 입력</span></div>
+    </div>
+    <div class="note">비율 컷오프는 <em>0.986도 통과</em>시켜 무력 — 점수가 1.0 근처에 몰리기 때문에 절대 점수차를 쓴다</div>
+  </div>
+  <div class="foot"></div><div class="fnote">AI Performance Improvement Competition</div>
+</div>
+
+<!-- 11 -->
+<div class="slide">
+  <div class="head"><span class="num">01</span><span class="ttl">검색 방식 비교</span></div>
+  <div class="rule"></div>
+  <div class="body">
+    <table class="tbl">
+      <tr><th class="lab">방식</th><th>공개 10</th><th>함정 10</th><th>종합 20</th><th>1위 실패</th></tr>
+      <tr><td class="lab">조 전체 BM25</td><td>1.0000</td><td>0.9000</td><td>0.9500</td><td class="mut">T01 · T09</td></tr>
+      <tr><td class="lab">항 최고점 BM25</td><td class="mut">0.9500</td><td>0.9000</td><td class="mut">0.9250</td><td class="mut">P09 · T03 · T04</td></tr>
+      <tr class="hi"><td class="lab">두 채널 RRF 결합<span class="tag">최종</span></td><td>1.0000</td><td>0.9500</td><td>0.9750</td><td>T09</td></tr>
+      <tr><td class="lab">어절 토크나이즈</td><td>1.0000</td><td class="mut">0.6417</td><td class="mut">0.8208</td><td class="mut">6문항</td></tr>
+      <tr><td class="lab">문서명 제거</td><td>1.0000</td><td>0.9500</td><td>0.9750</td><td class="mut">T01</td></tr>
+    </table>
+    <div class="note">문서명을 빼면 점수는 같지만 <em>실패가 보일러플레이트 문항으로 옮겨간다</em> — 점수만 보면 놓칠 차이</div>
+  </div>
+  <div class="foot"></div><div class="fnote">AI Performance Improvement Competition</div>
+</div>
+
+<!-- 12 -->
+<div class="slide">
+  <div class="head"><span class="num">01</span><span class="ttl">되돌린 실험</span></div>
+  <div class="rule"></div>
+  <div class="body">
+    <div class="grid4">
+      <div class="card gray"><b>임베딩 검색 추가</b><span style="color:#b8442f;font-weight:700;font-size:19px">단독 0.90 / 0.80 — BM25보다 낮음</span><span>3번째 채널로 넣자 공개 10문항이 1.00 → 0.95로 하락</span></div>
+      <div class="card gray"><b>전수 리랭킹</b><span style="color:#b8442f;font-weight:700;font-size:19px">질문당 24.45초</span><span>BM25 없이 서브청크 343개를 전부 리랭킹 — 120초 제한에 위험</span></div>
+      <div class="card gray"><b>글머리기호 분할</b><span style="color:#b8442f;font-weight:700;font-size:19px">0.9457 → 0.9239</span><span>잘게 쪼갤수록 보일러플레이트의 짧은 항목이 우연히 튐</span></div>
+      <div class="card gray"><b>검색 회수 확대</b><span style="color:#b8442f;font-weight:700;font-size:19px">답변 10개 중 9개가 동일</span><span>놓친 내용이 이미 1위 조항 안에 있었음 → 생성 문제로 확정</span></div>
+    </div>
+  </div>
+  <div class="foot"></div><div class="fnote">AI Performance Improvement Competition</div>
+</div>
+
+<!-- 13 -->
+<div class="slide">
+  <div class="head"><span class="num">01</span><span class="ttl">검증 결과</span></div>
+  <div class="rule"></div>
+  <div class="body">
+    <div class="grid4">
+      <div class="card blue"><b>MRR 1.000</b><span>공식 채점 · 공개 10문항<br>10문항 전부 정답이 1위 → 배점 20점 만점</span></div>
+      <div class="card green ar"><b>20 / 20 1위</b><span>공개 10 + 자체 함정 10<br>더 어려운 세트에서도 재현</span></div>
+      <div class="card yellow"><b>86.1%</b><span>72개 조항 전수 · 문서명 힌트 없는 최악 조건<br>실패 10건 전부 확인 → 새 유형 0건</span></div>
+      <div class="card pink ar"><b>90.0 : 90.3</b><span>held-out 60개 조항 vs 전체<br>격차 없음 = 튜닝 데이터에 과적합 아님</span></div>
+    </div>
+  </div>
+  <div class="foot"></div><div class="fnote">AI Performance Improvement Competition</div>
+</div>

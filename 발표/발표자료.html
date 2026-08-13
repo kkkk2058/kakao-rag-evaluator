@@ -1,0 +1,727 @@
+<title>팀 8 · 카카오 약관 RAG 결과기 — 5분 발표</title>
+
+<style>
+  :root{
+    --paper:#F5F4F0;
+    --paper-2:#EDEBE5;
+    --ink:#15181D;
+    --muted:#6A6E76;
+    --rule:#D5D4CE;
+    --rule-soft:#E4E2DC;
+    --mark:#A8271C;
+    --mark-bg:#F3E3E0;
+    --verify:#1C5C57;
+    --verify-bg:#DFEBE8;
+
+    --font-text:"Pretendard Variable",Pretendard,-apple-system,"Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",system-ui,sans-serif;
+    --font-data:ui-monospace,"SF Mono",SFMono-Regular,Menlo,"Cascadia Mono",Consolas,monospace;
+
+    --pad:clamp(22px,4.2vw,68px);
+    --max:1180px;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --paper:#14171B;
+      --paper-2:#1B1F25;
+      --ink:#E6E4DE;
+      --muted:#959AA3;
+      --rule:#2A2F37;
+      --rule-soft:#22262D;
+      --mark:#E8776A;
+      --mark-bg:#331F1D;
+      --verify:#62B9AE;
+      --verify-bg:#152B2A;
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#14171B;
+    --paper-2:#1B1F25;
+    --ink:#E6E4DE;
+    --muted:#959AA3;
+    --rule:#2A2F37;
+    --rule-soft:#22262D;
+    --mark:#E8776A;
+    --mark-bg:#331F1D;
+    --verify:#62B9AE;
+    --verify-bg:#152B2A;
+  }
+  :root[data-theme="light"]{
+    --paper:#F5F4F0;
+    --paper-2:#EDEBE5;
+    --ink:#15181D;
+    --muted:#6A6E76;
+    --rule:#D5D4CE;
+    --rule-soft:#E4E2DC;
+    --mark:#A8271C;
+    --mark-bg:#F3E3E0;
+    --verify:#1C5C57;
+    --verify-bg:#DFEBE8;
+  }
+
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:var(--font-text);
+    font-size:clamp(14px,1.05vw,17px);
+    line-height:1.62;
+    -webkit-font-smoothing:antialiased;
+    word-break:keep-all;
+  }
+
+  /* ── 제본된 장부: 상단 러닝헤드 / 본문 / 하단 괘선 ───────────────── */
+  .deck{position:relative;}
+
+  .leaf{
+    display:none;
+    min-height:100vh;
+    padding:calc(var(--pad) * .78) var(--pad) calc(var(--pad) * .9);
+    flex-direction:column;
+    gap:clamp(14px,2vw,26px);
+  }
+  .leaf.is-on{display:flex;}
+
+  .head{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    gap:16px;
+    padding-bottom:9px;
+    border-bottom:1.5px solid var(--ink);
+    flex-wrap:wrap;
+  }
+  .crit{
+    font-family:var(--font-data);
+    font-size:.72em;
+    letter-spacing:.1em;
+    text-transform:uppercase;
+    color:var(--muted);
+    display:flex;
+    align-items:center;
+    gap:.55em;
+  }
+  .crit b{
+    color:var(--ink);
+    font-weight:600;
+    letter-spacing:.04em;
+    text-transform:none;
+    font-size:1.06em;
+  }
+  .folio{
+    font-family:var(--font-data);
+    font-size:.72em;
+    letter-spacing:.08em;
+    color:var(--muted);
+    font-variant-numeric:tabular-nums;
+  }
+
+  .body{flex:1;display:flex;flex-direction:column;gap:clamp(13px,1.7vw,22px);max-width:var(--max);width:100%;}
+
+  h1{
+    font-size:clamp(30px,5.2vw,62px);
+    line-height:1.1;
+    letter-spacing:-.035em;
+    font-weight:800;
+    margin:0;
+    text-wrap:balance;
+  }
+  h2{
+    font-size:clamp(21px,2.85vw,36px);
+    line-height:1.22;
+    letter-spacing:-.028em;
+    font-weight:800;
+    margin:0;
+    text-wrap:balance;
+  }
+  h3{
+    font-family:var(--font-data);
+    font-size:.74em;
+    letter-spacing:.13em;
+    text-transform:uppercase;
+    font-weight:600;
+    color:var(--muted);
+    margin:0 0 .5em;
+  }
+  p{margin:0;max-width:66ch;}
+  .lede{font-size:clamp(15px,1.35vw,19px);color:var(--muted);max-width:60ch;}
+  strong{font-weight:700;}
+  em{font-style:normal;color:var(--mark);font-weight:600;}
+  .ok{color:var(--verify);font-weight:600;}
+
+  /* ── 표 ─────────────────────────────────────────────── */
+  .scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+  table{
+    border-collapse:collapse;
+    width:100%;
+    min-width:min(560px,100%);
+    font-size:.94em;
+  }
+  th,td{
+    text-align:left;
+    padding:.5em .85em .5em 0;
+    border-bottom:1px solid var(--rule-soft);
+    vertical-align:top;
+  }
+  th{
+    font-family:var(--font-data);
+    font-size:.78em;
+    letter-spacing:.07em;
+    text-transform:uppercase;
+    color:var(--muted);
+    font-weight:600;
+    border-bottom:1px solid var(--rule);
+    white-space:nowrap;
+  }
+  td.n,th.n{
+    font-family:var(--font-data);
+    font-variant-numeric:tabular-nums;
+    text-align:right;
+    padding-right:1.1em;
+    white-space:nowrap;
+  }
+  tr.hi td{background:var(--verify-bg);font-weight:600;}
+  tr.hi td:first-child{box-shadow:inset 3px 0 0 var(--verify);padding-left:.7em;}
+  tr.lo td{background:var(--mark-bg);}
+  tr.lo td:first-child{box-shadow:inset 3px 0 0 var(--mark);padding-left:.7em;}
+  tbody tr:last-child td{border-bottom:none;}
+
+  /* ── 수치 배지 ───────────────────────────────────────── */
+  .stats{display:flex;gap:clamp(18px,3.4vw,54px);flex-wrap:wrap;}
+  .stat{display:flex;flex-direction:column;gap:.15em;}
+  .stat .v{
+    font-family:var(--font-data);
+    font-variant-numeric:tabular-nums;
+    font-size:clamp(26px,3.9vw,46px);
+    font-weight:600;
+    letter-spacing:-.02em;
+    line-height:1;
+  }
+  .stat .k{font-family:var(--font-data);font-size:.72em;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);}
+  .stat .d{font-size:.82em;color:var(--muted);}
+  .stat.up .v{color:var(--verify);}
+
+  /* ── 조문형 파이프라인 ─────────────────────────────────── */
+  .statute{display:flex;flex-direction:column;gap:.1em;border-left:1.5px solid var(--rule);}
+  .clause{
+    display:grid;
+    grid-template-columns:minmax(92px,7.5em) 1fr;
+    gap:0 clamp(12px,1.6vw,26px);
+    padding:.62em 0 .62em clamp(12px,1.6vw,22px);
+    border-bottom:1px solid var(--rule-soft);
+    position:relative;
+  }
+  .clause:last-child{border-bottom:none;}
+  .clause::before{
+    content:"";
+    position:absolute;
+    left:-1.5px;top:1.05em;
+    width:9px;height:1.5px;
+    background:var(--ink);
+  }
+  .clause .no{
+    font-family:var(--font-data);
+    font-size:.78em;
+    letter-spacing:.05em;
+    color:var(--muted);
+    padding-top:.28em;
+  }
+  .clause .what{font-weight:700;font-size:1.02em;letter-spacing:-.015em;}
+  .clause .why{grid-column:2;font-size:.88em;color:var(--muted);margin-top:.12em;max-width:88ch;}
+  .clause .why b{color:var(--ink);font-weight:600;}
+
+  /* ── 목록 ───────────────────────────────────────────── */
+  ul.list{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:.6em;}
+  ul.list li{
+    padding-left:1.55em;
+    position:relative;
+    max-width:74ch;
+  }
+  ul.list li::before{
+    content:attr(data-n);
+    position:absolute;left:0;top:.06em;
+    font-family:var(--font-data);
+    font-size:.78em;
+    color:var(--muted);
+  }
+
+  .cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(290px,100%),1fr));gap:clamp(16px,2.4vw,38px);}
+
+  .note{
+    font-size:.84em;
+    color:var(--muted);
+    border-top:1px solid var(--rule-soft);
+    padding-top:.7em;
+    max-width:82ch;
+  }
+  .note code, code{
+    font-family:var(--font-data);
+    font-size:.92em;
+    background:var(--paper-2);
+    padding:.08em .38em;
+    border-radius:2px;
+  }
+
+  .callout{
+    border-left:2.5px solid var(--ink);
+    padding:.15em 0 .15em 1em;
+    max-width:72ch;
+    font-size:1.02em;
+  }
+  .callout.warn{border-left-color:var(--mark);}
+  .callout.good{border-left-color:var(--verify);}
+
+  .foot{
+    margin-top:auto;
+    padding-top:.7em;
+    padding-right:clamp(0px,14vw,168px);
+    border-top:1px solid var(--rule);
+    font-family:var(--font-data);
+    font-size:.7em;
+    letter-spacing:.06em;
+    color:var(--muted);
+    display:flex;
+    justify-content:space-between;
+    gap:14px;
+    flex-wrap:wrap;
+  }
+
+  /* ── 내비게이션 ─────────────────────────────────────── */
+  .nav{
+    position:fixed;
+    right:calc(var(--pad) * .5);
+    bottom:calc(var(--pad) * .42);
+    display:flex;
+    align-items:center;
+    gap:6px;
+    z-index:20;
+  }
+  .nav button{
+    font-family:var(--font-data);
+    font-size:13px;
+    line-height:1;
+    padding:8px 11px;
+    background:var(--paper);
+    color:var(--ink);
+    border:1px solid var(--rule);
+    border-radius:2px;
+    cursor:pointer;
+  }
+  .nav button:hover{background:var(--paper-2);}
+  .nav button:focus-visible{outline:2px solid var(--verify);outline-offset:2px;}
+  .nav .pos{
+    font-family:var(--font-data);
+    font-size:12px;
+    letter-spacing:.08em;
+    color:var(--muted);
+    font-variant-numeric:tabular-nums;
+    padding:0 4px;
+  }
+  .bar{position:fixed;top:0;left:0;height:2px;background:var(--ink);z-index:21;transition:width .22s ease;}
+  @media (prefers-reduced-motion:reduce){.bar{transition:none;}}
+
+  @media (max-width:640px){
+    .clause{grid-template-columns:1fr;}
+    .clause .no{padding-top:0;}
+    .clause .why{grid-column:1;}
+  }
+
+  /* ── 인쇄: 전체 펼침 ─────────────────────────────────── */
+  @media print{
+    :root{--paper:#fff;--ink:#000;--muted:#555;--rule:#999;--rule-soft:#ccc;--paper-2:#f0f0f0;}
+    .leaf{display:flex !important;min-height:auto;page-break-after:always;padding:24px 0;}
+    .nav,.bar{display:none !important;}
+    body{font-size:11pt;}
+  }
+</style>
+
+<div class="bar" id="bar"></div>
+
+<div class="deck" id="deck">
+
+  <!-- ══ 1. 표지 ══════════════════════════════════════════ -->
+  <section class="leaf is-on">
+    <div class="head">
+      <div class="crit">KTB RAG 예선 · <b>팀 8</b></div>
+      <div class="folio">결과기 + 교차평가 평가기</div>
+    </div>
+    <div class="body" style="justify-content:center;gap:clamp(20px,3vw,40px);">
+      <div>
+        <h3>5분 발표</h3>
+        <h1>채점식을 역산해서,<br>점수가 새는 곳만 고쳤다</h1>
+      </div>
+      <p class="lede">카카오 약관 4종 · 72개 조항에 대한 RAG 결과기. 새 기능을 늘리는 대신, 공식 채점 결과를 분해해 손실이 어느 항목에 몰려 있는지 먼저 재고 그 항목만 팠습니다.</p>
+      <div class="stats">
+        <div class="stat"><span class="v">1.000</span><span class="k">검색 MRR</span><span class="d">10문항 전부 1위</span></div>
+        <div class="stat up"><span class="v">0.7514</span><span class="k">키팩트 F1</span><span class="d">직전 공식 0.6551 → +0.096</span></div>
+        <div class="stat"><span class="v">0 / 36</span><span class="k">HTTP 실패</span><span class="d">타임아웃 0 · p95 51.9s</span></div>
+      </div>
+    </div>
+    <div class="foot"><span>팀 8 · 결과기_최종.ipynb</span><span>← → 로 넘기기</span></div>
+  </section>
+
+  <!-- ══ 2. 기준 ① 목표와 접근 ═════════════════════════════ -->
+  <section class="leaf">
+    <div class="head">
+      <div class="crit">평가기준 ① <b>개선 목표와 접근 방향</b></div>
+      <div class="folio">02 / 10</div>
+    </div>
+    <div class="body">
+      <h2>어디를 고칠지부터 측정으로 정했다</h2>
+      <p class="lede">운영진이 확인해 준 배점: <code>총점 = 0.20×MRR + 0.30×키팩트 F1 + 0.50×LLM 판정</code></p>
+
+      <div class="cols">
+        <div>
+          <h3>직전 공식 채점 — 공개 10문항</h3>
+          <div class="scroll"><table>
+            <thead><tr><th>지표</th><th class="n">점수</th><th class="n">잃은 점수</th></tr></thead>
+            <tbody>
+              <tr><td>검색 MRR</td><td class="n">1.000</td><td class="n">0.00</td></tr>
+              <tr><td>LLM 판정</td><td class="n">97.45</td><td class="n">1.28</td></tr>
+              <tr class="lo"><td>키팩트 F1</td><td class="n">0.6551</td><td class="n">10.35</td></tr>
+              <tr><td><strong>총점</strong></td><td class="n"><strong>88.378</strong></td><td class="n"><strong>11.62</strong></td></tr>
+            </tbody>
+          </table></div>
+        </div>
+        <div>
+          <h3>여기서 나온 결론</h3>
+          <ul class="list">
+            <li data-n="→">남은 손실의 <em>89%</em>가 키팩트 F1 한 칸에 있었습니다. MRR과 판정은 이미 천장입니다.</li>
+            <li data-n="→">그래서 목표를 <strong>"검색 1.000을 지키면서 F1만 올린다"</strong>로 좁혔습니다. 모델을 키우거나 기능을 늘리는 문제가 아니라 <strong>답변의 형태</strong>를 바꾸는 문제였습니다.</li>
+            <li data-n="→">먼저 <strong>F1 정의부터 역산</strong>했습니다. 공식 per_question 점수 10건을 후보식과 대조 → 어절 <strong>집합</strong> F1이 MSE <code>0.0015</code>로 일치(문자 bigram 0.0038, 키팩트별 평균 0.07~0.10은 불일치).</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="callout">정의를 알아야 이득을 계산할 수 있습니다. 답변 전체를 하나의 토큰 가방으로 보고 재기 때문에 <strong>빠뜨려도 깎이고 덧붙여도 똑같이 깎입니다.</strong> 이 한 문장이 이후 모든 설계 결정의 기준이 됐습니다.</div>
+    </div>
+    <div class="foot"><span>출처: practice_result_8.json 역산</span><span>02</span></div>
+  </section>
+
+  <!-- ══ 3. 기준 ② 결과기 ═══════════════════════════════ -->
+  <section class="leaf">
+    <div class="head">
+      <div class="crit">평가기준 ② <b>개선 과정과 기술적 선택 — 결과기</b></div>
+      <div class="folio">03 / 10</div>
+    </div>
+    <div class="body">
+      <h2>72개 조항이라는 제약이 설계를 거의 다 결정했다</h2>
+
+      <div class="statute">
+        <div class="clause">
+          <div class="no">제1단 · 검색</div>
+          <div class="what">BM25 문자 bigram, 2채널 RRF</div>
+          <div class="why">벡터DB·ANN 없음 — 코퍼스가 <b>72개 조항</b>이라 필요한 규모가 아닙니다. 조사 변형("제10조는"/"제10조")에 강한 문자 bigram: 어절 <b>0.833</b> → bigram <b>1.000</b>. 조 전체(<b>0.952</b>)와 항 최고점(<b>0.893</b>)은 편향이 정반대라 RRF로 섞어 <b>0.964</b>.</div>
+        </div>
+        <div class="clause">
+          <div class="no">제2단 · 재정렬</div>
+          <div class="what">bge-reranker-v2-m3, 같은 2채널 RRF</div>
+          <div class="why">조 전체 단독 <b>0.9750</b>(T01 실패) · 서브청크 단독 <b>0.9750</b>(T03 실패) — 점수는 같은데 실패 문항이 다릅니다. 결합하니 20문항 전부 1위, <b>1.0000</b>.</div>
+        </div>
+        <div class="clause">
+          <div class="no">제3단 · 근거 구성</div>
+          <div class="what">조 길이에 따라 다르게 자른다</div>
+          <div class="why">짧은 조는 전문 그대로(P08 <b>0.933</b>, P05 <b>1.000</b>), 긴 조는 항·호 묶음만 보존 — 긴 조를 전문 인용하면 P09 <b>0.125</b>, P01 <b>0.200</b>으로 붕괴합니다. 같은 지시가 길이에 따라 정반대 결과를 냅니다.</div>
+        </div>
+        <div class="clause">
+          <div class="no">제4단 · 생성</div>
+          <div class="what">Qwen2.5-7B-Instruct NF4 4bit</div>
+          <div class="why">T4 15GB에 7B fp16(15.2GB)은 안 올라갑니다. 4bit로 약 5.6GB + 리랭커 1.2GB. 로딩 실패 시 <b>3B fp16으로 자동 폴백</b>.</div>
+        </div>
+        <div class="clause">
+          <div class="no">제5단 · 검증</div>
+          <div class="what">구조 검증 + 커버리지 유도 재생성 1회</div>
+          <div class="why">근거에 있는데 답변에서 빠진 <b>절</b>을 지목해 다시 씁니다. 재생성분이 근거에 grounded 이고 누락을 실제로 더 담을 때만 채택 — <b>나빠질 수 없는 구조</b>. 자체 20문항에서 엄격 F1 <b>0.433 → 0.600</b>, 퇴행 0.</div>
+        </div>
+      </div>
+
+      <div class="callout warn">리랭커 다운로드, 7B 로딩, bitsandbytes 설치 — 실패 지점마다 전부 조용한 폴백을 뒀습니다. <strong>새 Colab에서 셀 하나가 죽으면 그 순간 0점</strong>이기 때문입니다.</div>
+    </div>
+    <div class="foot"><span>MRR 측정셋: 공개 10 + 패러프레이즈 / 공개 10 + 자체 함정 10</span><span>03</span></div>
+  </section>
+
+  <!-- ══ 4. 기준 ② 평가기 ═══════════════════════════════ -->
+  <section class="leaf">
+    <div class="head">
+      <div class="crit">평가기준 ② <b>개선 과정과 기술적 선택 — 평가기</b></div>
+      <div class="folio">04 / 10</div>
+    </div>
+    <div class="body">
+      <h2>채점기는 "정확함"보다 "무효화되지 않음"이 먼저다</h2>
+
+      <div class="cols">
+        <div>
+          <h3>세 가지 선택</h3>
+          <ul class="list">
+            <li data-n="1"><strong>판정 축은 Gemini 3.5 Flash 실채점</strong> — 운영진 필수 요구. <code>temperature=0</code>, 문항당 1콜로 4축을 JSON 스키마로 한 번에. "같은 기준을 같은 코드로 5팀에" 조건을 만족시키기 위해 변동을 최소화했습니다.</li>
+            <li data-n="2"><strong>폴백은 문항 단위로만</strong> — 3회 재시도 후에도 실패하면 <em>그 문항 하나만</em> 규칙 기반으로 대체하고 사유를 남깁니다. 한 문항의 429 오류가 5팀×30문항을 통째로 멈추게 두지 않습니다.</li>
+            <li data-n="3"><strong><code>status</code>는 무조건 <code>completed</code></strong> — 운영진 검사기 규칙: BLIND01~05 중 하나라도 completed가 아니면 <em>내 제출 파일 전체가 순위 산정에서 제외</em>됩니다. 그래서 상대 파일이 깨져 있어도 빈 답변으로 채점을 강행해 실제 점수를 매기고 마감합니다.</li>
+          </ul>
+        </div>
+        <div>
+          <h3>규칙 기반 폴백을 감으로 두지 않은 근거</h3>
+          <p style="font-size:.92em;">공식 심판의 축 점수 30건(3팀 × 공개 10문항)에 맞춰 보정했습니다. <strong>상관 r = 0.19 → 0.72.</strong></p>
+          <div class="scroll"><table>
+            <thead><tr><th>팀</th><th class="n">규칙 기반</th><th class="n">공식</th><th class="n">차</th></tr></thead>
+            <tbody>
+              <tr><td>8</td><td class="n">87.70</td><td class="n">87.50</td><td class="n">+0.20</td></tr>
+              <tr><td>12</td><td class="n">89.46</td><td class="n">88.80</td><td class="n">+0.67</td></tr>
+              <tr><td>13</td><td class="n">88.15</td><td class="n">87.14</td><td class="n">+1.01</td></tr>
+            </tbody>
+          </table></div>
+          <p class="note">보정 과정에서 나온 사실: 공식 감점은 <strong>완결성에 쏠려 있었습니다</strong>(16회 중 10회). 길이·부정어 같은 얕은 신호로 다른 축을 깎았더니 공식 점수와의 상관이 <em>음수</em>가 됐고(부정어 규칙은 발동한 4건이 전부 오탐), 확실한 증거가 있을 때만 깎도록 좁혔습니다.</p>
+        </div>
+      </div>
+    </div>
+    <div class="foot"><span>평가기_팀8.ipynb · evaluator_core.py · 로컬 검증 88건</span><span>04</span></div>
+  </section>
+
+  <!-- ══ 5. 기준 ③ 실험 설계 ══════════════════════════════ -->
+  <section class="leaf">
+    <div class="head">
+      <div class="crit">평가기준 ③ <b>실험 설계와 근거 — 설계</b></div>
+      <div class="folio">05 / 10</div>
+    </div>
+    <div class="body">
+      <h2>공개 10문항만으로는 과적합이 안 보인다</h2>
+      <p class="lede">검색 검증을 96개 질의로 늘렸습니다. 각 세트가 서로 다른 실패 유형을 겨냥합니다.</p>
+
+      <div class="scroll"><table>
+        <thead><tr><th>평가셋</th><th class="n">문항</th><th>무엇을 보는가</th><th class="n">결과</th></tr></thead>
+        <tbody>
+          <tr><td>공개 10문항</td><td class="n">10</td><td>기본 회귀 — 여기가 깨지면 즉시 되돌림</td><td class="n">MRR 1.000</td></tr>
+          <tr><td>패러프레이즈</td><td class="n">3~4</td><td>조사·어휘 변형 내성</td><td class="n">0.611 → 0.833 → 1.000</td></tr>
+          <tr><td>자체 함정 T01~T10</td><td class="n">10</td><td>"예외 없이 항상" 전제 뒤집기, 문서 간 수치 충돌("6개월" vs "6개월 이상")</td><td class="n">MRR 0.950</td></tr>
+          <tr><td>72개 조항 전수</td><td class="n">72</td><td>문서명 힌트를 전혀 안 준 최악 조건</td><td class="n">62 / 72 (86.1%)</td></tr>
+        </tbody>
+      </table></div>
+
+      <div class="cols">
+        <div>
+          <h3>전수 실패 10건을 전부 열어봤다</h3>
+          <p><strong>10건 100%가 이미 알려진 보일러플레이트 충돌</strong>이었습니다 — 4개 약관의 제3조가 전부 "약관 외 준칙"이라 문서를 특정할 단서가 질문에 없으면 원리적으로 못 가릅니다. <span class="ok">새로운 실패 유형은 0건.</span></p>
+        </div>
+        <div>
+          <h3>실험 규칙 두 가지</h3>
+          <ul class="list">
+            <li data-n="·">회귀 없으면 채택, 있으면 되돌린다. 공개 10문항은 매 변경마다 재측정합니다.</li>
+            <li data-n="·"><strong>A/B는 한 번에 하나만.</strong> 7차 제출에서 프롬프트 전면 개편·few-shot·토큰 예산을 동시에 바꿔 <em>원인 귀속이 불가능한 실험</em>을 만든 실패를 겪고 세운 규칙입니다.</li>
+          </ul>
+        </div>
+      </div>
+      <p class="note">* 패러프레이즈는 측정 시점에 따라 3문항(토크나이저 사다리) / 4문항(RRF 비교)을 썼습니다. 함정 10문항은 원문의 "다만~" 예외절과 문서 간 충돌 지점을 직접 찾아 만들고 정답을 원문 대조로 검증했습니다.</p>
+    </div>
+    <div class="foot"><span>하네스/trap_stress_test_harness.py · retriever_progression.py</span><span>05</span></div>
+  </section>
+
+  <!-- ══ 6. 기준 ③ 근거 ═══════════════════════════════════ -->
+  <section class="leaf">
+    <div class="head">
+      <div class="crit">평가기준 ③ <b>실험 설계와 근거 — 측정 결과</b></div>
+      <div class="folio">06 / 10</div>
+    </div>
+    <div class="body">
+      <h2>답변 "형태"가 F1을 좌우한다 — 봉우리가 좁았다</h2>
+
+      <div class="cols">
+        <div>
+          <h3>같은 문항, 답변 스타일만 교체 (P02)</h3>
+          <div class="scroll"><table>
+            <thead><tr><th>스타일</th><th class="n">어절 F1</th></tr></thead>
+            <tbody>
+              <tr><td>결론만 ("2시간입니다")</td><td class="n">0.190</td></tr>
+              <tr><td>질문 복원 + 결론</td><td class="n">0.519</td></tr>
+              <tr class="hi"><td>정답 문장 통째 복사</td><td class="n">0.829</td></tr>
+              <tr><td>항(②) 전체 복사</td><td class="n">0.436</td></tr>
+              <tr><td>조 전체 복사</td><td class="n">0.409</td></tr>
+            </tbody>
+          </table></div>
+          <p class="note"><strong>덜 써도 급락(0.19), 더 써도 급락(0.41).</strong> 그래서 프롬프트 규칙을 "원문 문장을 통째로, 그러나 질문 주제 밖으로는 넘어가지 말 것" 두 축으로 짝지어 설계했습니다.</p>
+          <p class="note">여기서 <strong>기각한 것</strong>: 본문에 근거 인용 표기 넣기 → <em>0.829 → 0.694</em>(−0.135, 30점 환산 −4점). 코드가 정확한 조번호를 붙여 할루시네이션 위험이 0인 안조차 손해라 뺐습니다.</p>
+        </div>
+        <div>
+          <h3>최종 결과 — 직전 공식 채점 대비</h3>
+          <div class="scroll"><table>
+            <thead><tr><th>문항</th><th class="n">직전</th><th class="n">최종</th><th class="n">Δ</th></tr></thead>
+            <tbody>
+              <tr class="hi"><td>P08</td><td class="n">0.452</td><td class="n">0.931</td><td class="n">+0.479</td></tr>
+              <tr class="hi"><td>P07</td><td class="n">0.333</td><td class="n">0.609</td><td class="n">+0.276</td></tr>
+              <tr class="hi"><td>P09</td><td class="n">0.468</td><td class="n">0.540</td><td class="n">+0.072</td></tr>
+              <tr><td>P10</td><td class="n">0.746</td><td class="n">0.747</td><td class="n">+0.001</td></tr>
+              <tr class="lo"><td>P02</td><td class="n">0.450</td><td class="n">0.435</td><td class="n">−0.015</td></tr>
+              <tr><td><strong>평균</strong></td><td class="n"><strong>0.6551</strong></td><td class="n"><strong>0.7514</strong></td><td class="n"><strong>+0.096</strong></td></tr>
+            </tbody>
+          </table></div>
+          <div class="callout good" style="margin-top:.8em;">키팩트 F1 <strong>+0.096</strong> → 가중 <strong>+2.9점</strong>. 검색 MRR은 <strong>1.000 유지</strong>(회귀 0).</div>
+        </div>
+      </div>
+      <p class="note">최종 수치는 제출본 <code>answers_public_8.json</code>을 우리 평가기로 다시 채점한 값입니다. 이 평가기의 F1 식은 공식 per_question 점수와 MSE 0.0015로 일치하는 것을 확인했습니다.</p>
+    </div>
+    <div class="foot"><span>측정: 평가기/evaluator_core.py · 하네스/f1_style_sim.py</span><span>06</span></div>
+  </section>
+
+  <!-- ══ 7. 기준 ④ 품질과 속도 ════════════════════════════ -->
+  <section class="leaf">
+    <div class="head">
+      <div class="crit">평가기준 ④ <b>품질과 속도의 균형</b></div>
+      <div class="folio">07 / 10</div>
+    </div>
+    <div class="body">
+      <h2>속도엔 배점이 없다. 하지만 120초 타임아웃은 있다</h2>
+      <p class="lede">그래서 속도를 <strong>목적함수가 아니라 제약조건</strong>으로 놓고, 제약 안에 남는 여유를 전부 품질로 바꿨습니다.</p>
+
+      <div class="cols">
+        <div>
+          <h3>HTTP 실측 — 12요청 × 3회, 동시 2</h3>
+          <div class="scroll"><table>
+            <tbody>
+              <tr><td>성공률</td><td class="n"><strong>36 / 36</strong> · 실패 0</td></tr>
+              <tr><td>타임아웃</td><td class="n">0 문항</td></tr>
+              <tr><td>p50 지연</td><td class="n">21.97 s</td></tr>
+              <tr><td>p95 지연</td><td class="n">51.92 s</td></tr>
+              <tr><td>처리량</td><td class="n">0.0747 req/s</td></tr>
+              <tr><td>3회 p50 편차</td><td class="n">21.74 ~ 22.13 s</td></tr>
+              <tr><td>문서명 규정 위반</td><td class="n">0 건</td></tr>
+            </tbody>
+          </table></div>
+          <p class="note">문항당 제한 <strong>120초</strong> 대비 p95가 <strong>43%</strong> — 2.3배 여유. 3회 반복 p50 편차가 0.39초라 이 값은 우연이 아닙니다.</p>
+        </div>
+        <div>
+          <h3>이 여유를 품질로 환전한 네 가지</h3>
+          <ul class="list">
+            <li data-n="1"><strong>근거 truncation 전면 제거.</strong> 1000자 컷에서 최악의 조항은 <em>2482자가 통째로</em> 사라지고 있었습니다(금지행위 12~23번 항목 전체). 검색이 맞혀도 모델이 못 보면 오답입니다. 속도 악화도 없었습니다 — CPU 실측 9.91s → <span class="ok">7.47s</span>.</li>
+            <li data-n="2"><strong>3B 대신 7B-4bit.</strong> 생성 지연 6.2s → 7.8s. 1.6초를 내주고 폴백 안전망을 얻는 거래로 판단했습니다.</li>
+            <li data-n="3"><strong>질문별 동적 토큰 예산.</strong> 목록형 최대 512 / 일반 200. 과잉 생성은 <strong>F1 정밀도도 함께 깎기</strong> 때문에 여기서는 속도와 품질이 같은 방향입니다.</li>
+            <li data-n="4"><strong>재시도 마감 35초.</strong> 이미 35초를 쓴 문항은 재시도를 시작하지 않습니다. <strong>구조가 덜 다듬어진 답변이 타임아웃 0점보다 낫다</strong>는 판단입니다.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="foot"><span>출처: answers_public_8.json → meta.performance</span><span>07</span></div>
+  </section>
+
+  <!-- ══ 8. 기준 ⑤ 실패 ═══════════════════════════════════ -->
+  <section class="leaf">
+    <div class="head">
+      <div class="crit">평가기준 ⑤ <b>실패와 한계 — 되돌린 것들</b></div>
+      <div class="folio">08 / 10</div>
+    </div>
+    <div class="body">
+      <h2>네 가지를 되돌렸다 — 전부 "좋아 보였는데 숫자가 아니었다"</h2>
+
+      <div class="scroll"><table>
+        <thead><tr><th>시도</th><th>기대</th><th>실측</th><th>처리</th></tr></thead>
+        <tbody>
+          <tr><td><strong>few-shot 예시 주입</strong></td><td>P08 자기모순 해결</td><td>소계 37.90 → <em>36.44</em>. 겨냥한 P08은 그대로고 P09에 새 회귀 발생</td><td>제거</td></tr>
+          <tr><td><strong>검색 회수 확대</strong> (min_k=2)</td><td>키팩트를 더 담기</td><td>답변 10개 중 <strong>9개가 글자까지 동일</strong>, 유일하게 바뀐 P06은 오히려 악화</td><td>원복</td></tr>
+          <tr><td><strong>서브청크 단독 결합안</strong></td><td>리랭커 절단 보완</td><td>20문항 + 프로브 3문항에서 <strong>순위 변화 0</strong> — 복잡도만 늘었음</td><td>폐기</td></tr>
+          <tr><td><strong>규칙 "예외를 찾아 뒤집어라"</strong></td><td>함정 문항 대응</td><td>단정형이 아닌 질문(P09)에도 발동해 결론을 반대로 뒤집음</td><td>삭제</td></tr>
+        </tbody>
+      </table></div>
+
+      <div class="callout warn">
+        <h3 style="margin-bottom:.35em;">가장 크게 정정한 주장 — 7B 우위</h3>
+        <p>"7B로 올려서 좋아졌다"고 쓰려 했으나 <strong>철회했습니다.</strong> 10문항 대응표본 t검정에서 평균 차이 <strong>+0.034</strong>, 95% 신뢰구간 <strong>[−0.060, +0.129]</strong> — 0을 포함합니다. 6승 4패도 동전 던지기와 구분되지 않습니다(p≈0.38). 게다가 우위가 두 문항에 얹혀 있고, 그 둘을 빼면 <strong>3B가 8문항에서 앞섭니다.</strong></p>
+        <p style="margin-top:.5em;">정확한 표현은 <em>"이득이 확인됐다"가 아니라 "손해 아님이 확인됐다"</em>입니다. 그래도 켜두는 이유는 리스크가 비대칭이기 때문입니다 — 4bit 로딩이 실패하면 폴백이 바로 비교 대상인 3B라, downside가 "3B"이고 upside가 "아마 조금 나음"입니다.</p>
+      </div>
+    </div>
+    <div class="foot"><span>리트리버_설계노트.md §9-7 · §11-3 · §12 · §10-5</span><span>08</span></div>
+  </section>
+
+  <!-- ══ 9. 기준 ⑤ 한계와 다음 ═══════════════════════════ -->
+  <section class="leaf">
+    <div class="head">
+      <div class="crit">평가기준 ⑤ <b>현재 한계와 추가 개선 방향</b></div>
+      <div class="folio">09 / 10</div>
+    </div>
+    <div class="body">
+      <h2>남은 손실은 두 방향뿐이고, 크기를 이미 재 놨다</h2>
+
+      <div class="cols">
+        <div>
+          <h3>알고 있는 한계 3가지</h3>
+          <ul class="list">
+            <li data-n="1"><strong>P02는 예측이 빗나갔다.</strong> 절 단위 커버리지가 정확히 겨냥한 문항인데 오프라인 예측 0.610 → 실측 <em>0.435</em>, 10문항 중 <strong>유일한 퇴행</strong>입니다. 재생성이 채택 조건을 못 넘었거나 35초 마감에 걸린 것으로 보이며, 실행 로그로 어느 쪽인지 먼저 가려야 합니다.</li>
+            <li data-n="2"><strong>리랭커 <code>max_length=512</code>가 아직 그대로다.</strong> 설계 결론은 2048로 올리는 것이었으나 최종 코드에 반영되지 않았습니다. 72개 중 8개(11%)가 여기서 잘리고, 지금은 2채널의 서브청크 쪽이 우연히 메워주고 있습니다 — <strong>본선 30문항이 그 조항을 물으면 바로 드러납니다.</strong></li>
+            <li data-n="3"><strong>문서명 단서가 전혀 없는 질문.</strong> 4개 약관의 제3조가 모두 "약관 외 준칙"이라 원리적으로 구분 불가입니다. 리랭커도 주제까지만 맞힙니다. 애매하면 후보를 넓게 반환하는 쪽이 안전하다고 판단해 남겨뒀습니다.</li>
+          </ul>
+        </div>
+        <div>
+          <h3>남은 헤드룸 — 같은 채점식으로 측정</h3>
+          <div class="scroll"><table>
+            <thead><tr><th>문항</th><th class="n">현재</th><th>남은 손실의 정체</th><th class="n">고치면</th></tr></thead>
+            <tbody>
+              <tr><td>P02</td><td class="n">0.435</td><td>복구 노력 문장 누락 + 질문 되풀이</td><td class="n">0.851</td></tr>
+              <tr><td>P09</td><td class="n">0.540</td><td>안 물어본 열거를 끌어옴 (정밀도 0.405)</td><td class="n">0.884</td></tr>
+              <tr><td>P07</td><td class="n">0.609</td><td>키팩트 1개 누락 (재현율 0.500)</td><td class="n">0.769</td></tr>
+            </tbody>
+          </table></div>
+          <div class="callout good" style="margin-top:.8em;">셋 다 고치면 평균 <strong>0.751 → 0.843</strong>, 가중 <strong>+2.8점</strong>.</div>
+          <p class="note">방향은 새 모델이 아닙니다. <strong>빠뜨린 절을 채우고, 안 물어본 절을 빼는 것</strong> — 시작할 때와 정확히 같은 두 축이고, 이제는 각각의 크기를 알고 있습니다.</p>
+        </div>
+      </div>
+    </div>
+    <div class="foot"><span>헤드룸은 정답 절을 넣고 뺀 답변을 같은 F1 식으로 재측정한 값</span><span>09</span></div>
+  </section>
+
+  <!-- ══ 10. 마무리 ═══════════════════════════════════════ -->
+  <section class="leaf">
+    <div class="head">
+      <div class="crit">정리</div>
+      <div class="folio">10 / 10</div>
+    </div>
+    <div class="body" style="justify-content:center;">
+      <h2>측정이 먼저였고, 코드는 그다음이었습니다</h2>
+      <ul class="list" style="font-size:1.06em;">
+        <li data-n="①">채점식을 역산해 <strong>손실의 89%가 키팩트 F1</strong>에 있음을 확인하고 거기만 팠습니다.</li>
+        <li data-n="②">검색은 벡터DB 없이 BM25 2채널 + 리랭커 2채널로, 평가기는 <strong>무효화되지 않는 것</strong>을 1순위로 설계했습니다.</li>
+        <li data-n="③">96개 질의로 검증해 <strong>MRR 1.000을 지키면서</strong> 키팩트 F1을 <strong>0.6551 → 0.7514</strong>로 올렸습니다.</li>
+        <li data-n="④">HTTP 실패 0/36, p95는 제한의 43%. <strong>남은 여유는 전부 품질로 환전</strong>했습니다.</li>
+        <li data-n="⑤">되돌린 시도 4개를 전부 숫자로 기각했고, <strong>7B 우위 주장은 신뢰구간이 0을 포함해 철회</strong>했습니다. 남은 <strong>+2.8점</strong>의 위치와 크기는 이미 재 놨습니다.</li>
+      </ul>
+      <div class="stats" style="margin-top:clamp(10px,2vw,26px);">
+        <div class="stat"><span class="v">1.000</span><span class="k">MRR</span></div>
+        <div class="stat up"><span class="v">0.7514</span><span class="k">키팩트 F1</span></div>
+        <div class="stat"><span class="v">0/36</span><span class="k">HTTP 실패</span></div>
+        <div class="stat"><span class="v">+2.8</span><span class="k">측정된 잔여 헤드룸</span></div>
+      </div>
+    </div>
+    <div class="foot"><span>팀 8</span><span>감사합니다</span></div>
+  </section>
+
+</div>
+
+<nav class="nav" aria-label="슬라이드 이동">
+  <button id="prev" type="button" aria-label="이전 슬라이드">←</button>
+  <span class="pos" id="pos">1 / 10</span>
+  <button id="next" type="button" aria-label="다음 슬라이드">→</button>
+</nav>
+
+<script>
+(function(){
+  var leaves = Array.prototype.slice.call(document.querySelectorAll('.leaf'));
+  var pos = document.getElementById('pos');
+  var bar = document.getElementById('bar');
+  var i = 0;
+
+  function show(n){
+    i = Math.max(0, Math.min(leaves.length - 1, n));
+    leaves.forEach(function(el, k){ el.classList.toggle('is-on', k === i); });
+    pos.textContent = (i + 1) + ' / ' + leaves.length;
+    bar.style.width = ((i + 1) / leaves.length * 100) + '%';
+    window.scrollTo(0, 0);
+  }
+
+  document.getElementById('next').addEventListener('click', function(){ show(i + 1); });
+  document.getElementById('prev').addEventListener('click', function(){ show(i - 1); });
+
+  document.addEventListener('keydown', function(e){
+    if (e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' ') { show(i + 1); e.preventDefault(); }
+    else if (e.key === 'ArrowLeft' || e.key === 'PageUp') { show(i - 1); e.preventDefault(); }
+    else if (e.key === 'Home') { show(0); }
+    else if (e.key === 'End') { show(leaves.length - 1); }
+  });
+
+  show(0);
+})();
+</script>
